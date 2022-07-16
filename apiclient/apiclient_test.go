@@ -15,11 +15,11 @@ func TestMakeNewsApiHTTPClient(t *testing.T) {
 
 	for _, test := range tests {
 		client := MakeNewsApiHTTPClient(ApiAuthDetails{
-			apiKey: "apikey",
-			apiUrl: test.apiUrl,
+			ApiKey: "apikey",
+			ApiUrl: test.apiUrl,
 		})
-		if client.apiAuthDetails.apiUrl != test.expectedUrl {
-			t.Fatalf("Expected %v, got %v", test.expectedUrl, client.apiAuthDetails.apiUrl)
+		if client.apiAuthDetails.ApiUrl != test.expectedUrl {
+			t.Fatalf("Expected %v, got %v", test.expectedUrl, client.apiAuthDetails.ApiUrl)
 		}
 	}
 }
