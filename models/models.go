@@ -47,8 +47,8 @@ type TopHeadlinesApiResponse struct {
 }
 
 type NewsAPIClient interface {
-	GetSources(language string) []NewsSource
-	GetTopHeadlines(sources []NewsSource) []SourceTopHeadline
+	GetSources(language string) ([]NewsSource, error)
+	GetTopHeadlines(sources []NewsSource) ([]SourceTopHeadline, error)
 }
 
 type DataLoader interface {

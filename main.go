@@ -2,36 +2,36 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"newsapietl/apiclient"
+	"newsapietl/models"
 	"os"
 )
 
 func main() {
 	apiKey := os.Getenv("NEWSAPI_API_KEY")
-	client := apiclient.MakeNewsApiHTTPClient(apiclient.ApiAuthDetails{
+	httpClient := apiclient.MakeNewsApiHTTPClient(apiclient.ApiAuthDetails{
 		ApiKey: apiKey,
 		ApiUrl: "https://newsapi.org/v2/",
 	})
-	sources, err := client.GetSources("en")
 
-	if err != nil {
-		log.Fatal(err)
+	memClient := &apiclient.InMemoryNewsAPIClient{
+		Sources: []models.NewsSource{{Id: "some-id", Name: "Some Name"}, {Id: "other-id", Name: "Other Name"}},
+		TopHeadlines: []models.SourceTopHeadline{
+			{SourceId: "some-id", Title: "Title 1"},
+			{SourceId: "other-id", Title: "Title 2"},
+		},
 	}
 
-	fmt.Println("Sources:")
-	for _, s := range sources {
-		fmt.Println(s)
+	printSources := func(c models.NewsAPIClient) {
+		sources, _ := c.GetSources("en")
+		for _, source := range sources {
+			fmt.Println(source.Id)
+		}
 	}
 
-	ths, err1 := client.GetTopHeadlines(sources)
+	clients := []models.NewsAPIClient{memClient, &httpClient}
 
-	if err1 != nil {
-		log.Fatal(err1)
-	}
-
-	fmt.Println("Top headlines:")
-	for _, th := range ths {
-		fmt.Println(th)
+	for _, c := range clients {
+		printSources(c)
 	}
 }
