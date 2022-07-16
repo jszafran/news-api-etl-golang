@@ -71,6 +71,35 @@ func (n *NewsApiHTTPClient) GetSources(language string) ([]models.NewsSource, er
 	return sources, nil
 }
 
-func (n *NewsApiHTTPClient) GetTopHeadlines(sources []models.NewsSource) []models.SourceTopHeadline {
-	return []models.SourceTopHeadline{}
+func (n *NewsApiHTTPClient) GetTopHeadlines(sources []models.NewsSource) ([]models.SourceTopHeadline, error) {
+	path := "top-headlines/?sources="
+	for _, s := range sources {
+		path += s.Id + ","
+	}
+	// strip trailing coma
+	path = path[:len(path)-1]
+	path += "&pageSize=100"
+
+	resp, err := n.MakeGetRequest(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var topHeadlinesFromApi models.TopHeadlinesApiResponse
+
+	b, _ := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
+	err1 := json.Unmarshal(b, &topHeadlinesFromApi)
+
+	if err1 != nil {
+		return nil, err1
+	}
+
+	ths := make([]models.SourceTopHeadline, 0)
+
+	for _, th := range topHeadlinesFromApi.Articles {
+		ths = append(ths, models.SourceTopHeadline{Title: th.Title, SourceId: th.Source.Id})
+	}
+	return ths, nil
 }

@@ -18,7 +18,20 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Println("Sources:")
 	for _, s := range sources {
 		fmt.Println(s)
+	}
+
+	ths, err1 := client.GetTopHeadlines(sources)
+
+	if err1 != nil {
+		log.Fatal(err1)
+	}
+
+	fmt.Println("Top headlines:")
+	for _, th := range ths {
+		fmt.Println(th)
 	}
 }
