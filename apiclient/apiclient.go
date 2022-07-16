@@ -1,6 +1,8 @@
 package apiclient
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"newsapietl/models"
@@ -25,7 +27,7 @@ func MakeNewsApiHTTPClient(apiAuthDetails ApiAuthDetails) NewsApiHTTPClient {
 	return NewsApiHTTPClient{apiAuthDetails, client}
 }
 
-func (n *NewsApiHTTPClient) MakeRequest(path string) (*http.Response, error) {
+func (n *NewsApiHTTPClient) MakeGetRequest(path string) (*http.Response, error) {
 	if string(path[0]) == "/" {
 		path = path[1:]
 	}
@@ -40,8 +42,33 @@ func (n *NewsApiHTTPClient) MakeRequest(path string) (*http.Response, error) {
 	return resp, err1
 }
 
-func (n *NewsApiHTTPClient) GetSources(language string) []models.NewsSource {
-	return []models.NewsSource{}
+func (n *NewsApiHTTPClient) GetSources(language string) ([]models.NewsSource, error) {
+	path := "sources"
+	if language != "" {
+		path += "?language=" + language + "&pageSize=100"
+	}
+
+	resp, err := n.MakeGetRequest(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var sourcesFromApi models.SourceApiResponse
+	b, _ := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
+	err1 := json.Unmarshal(b, &sourcesFromApi)
+
+	if err1 != nil {
+		return nil, err1
+	}
+
+	sources := make([]models.NewsSource, 0)
+
+	for _, s := range sourcesFromApi.Sources {
+		sources = append(sources, models.NewsSource{Id: s.Id, Name: s.Name})
+	}
+	return sources, nil
 }
 
 func (n *NewsApiHTTPClient) GetTopHeadlines(sources []models.NewsSource) []models.SourceTopHeadline {

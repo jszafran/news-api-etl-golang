@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"log"
 	"newsapietl/apiclient"
 	"os"
 )
@@ -13,9 +13,12 @@ func main() {
 		ApiKey: apiKey,
 		ApiUrl: "https://newsapi.org/v2/",
 	})
-	resp, err := client.MakeRequest("sources")
-	body, _ := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-	fmt.Println(resp.StatusCode)
-	fmt.Println(string(body), err)
+	sources, err := client.GetSources("en")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, s := range sources {
+		fmt.Println(s)
+	}
 }
