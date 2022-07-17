@@ -2,6 +2,7 @@ package apiclient
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -19,12 +20,15 @@ type NewsApiHTTPClient struct {
 	client         http.Client
 }
 
-func MakeNewsApiHTTPClient(apiAuthDetails ApiAuthDetails) *NewsApiHTTPClient {
+func MakeNewsApiHTTPClient(apiAuthDetails ApiAuthDetails) (*NewsApiHTTPClient, error) {
 	client := http.Client{Timeout: time.Second * 5}
 	if string(apiAuthDetails.ApiUrl[len(apiAuthDetails.ApiUrl)-1]) != "/" {
 		apiAuthDetails.ApiUrl += "/"
 	}
-	return &NewsApiHTTPClient{apiAuthDetails, client}
+	if apiAuthDetails.ApiKey == "" {
+		return nil, errors.New("api key cannot be an empty string")
+	}
+	return &NewsApiHTTPClient{apiAuthDetails, client}, nil
 }
 
 func (n *NewsApiHTTPClient) MakeGetRequest(path string) (*http.Response, error) {

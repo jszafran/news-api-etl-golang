@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"newsapietl/apiclient"
 	"newsapietl/models"
 	"os"
@@ -9,10 +10,14 @@ import (
 
 func main() {
 	apiKey := os.Getenv("NEWSAPI_API_KEY")
-	httpClient := apiclient.MakeNewsApiHTTPClient(apiclient.ApiAuthDetails{
+	httpClient, err := apiclient.MakeNewsApiHTTPClient(apiclient.ApiAuthDetails{
 		ApiKey: apiKey,
 		ApiUrl: "https://newsapi.org/v2/",
 	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	memClient := &apiclient.InMemoryNewsAPIClient{
 		Sources: []models.NewsSource{{Id: "some-id", Name: "Some Name"}, {Id: "other-id", Name: "Other Name"}},
