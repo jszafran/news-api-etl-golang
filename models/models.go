@@ -52,5 +52,5 @@ type NewsAPIClient interface {
 }
 
 type DataLoader interface {
-	LoadHeadlines(sourceTopHeadlines []SourceAggregatedTopHeadlines, timestamp string)
+	LoadHeadlines(sourceTopHeadlines []SourceAggregatedTopHeadlines, timestamp string) error
 }
