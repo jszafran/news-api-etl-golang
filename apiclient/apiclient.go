@@ -19,12 +19,12 @@ type NewsApiHTTPClient struct {
 	client         http.Client
 }
 
-func MakeNewsApiHTTPClient(apiAuthDetails ApiAuthDetails) NewsApiHTTPClient {
+func MakeNewsApiHTTPClient(apiAuthDetails ApiAuthDetails) *NewsApiHTTPClient {
 	client := http.Client{Timeout: time.Second * 5}
 	if string(apiAuthDetails.ApiUrl[len(apiAuthDetails.ApiUrl)-1]) != "/" {
 		apiAuthDetails.ApiUrl += "/"
 	}
-	return NewsApiHTTPClient{apiAuthDetails, client}
+	return &NewsApiHTTPClient{apiAuthDetails, client}
 }
 
 func (n *NewsApiHTTPClient) MakeGetRequest(path string) (*http.Response, error) {

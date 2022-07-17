@@ -29,7 +29,7 @@ func main() {
 		}
 	}
 
-	clients := []models.NewsAPIClient{memClient, &httpClient}
+	clients := []models.NewsAPIClient{memClient, httpClient}
 
 	for _, c := range clients {
 		printSources(c)
