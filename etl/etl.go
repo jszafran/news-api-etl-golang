@@ -3,20 +3,16 @@ package etl
 import (
 	"log"
 	"newsapietl/models"
+	"time"
 )
 
-type NewsAPIETL struct {
-	ApiClient  models.NewsAPIClient
-	DataLoader models.DataLoader
-}
-
-func (e *NewsAPIETL) extract() []models.SourceTopHeadline {
-	srcs, err := e.ApiClient.GetSources("en")
+func extract(apiClient models.NewsAPIClient) []models.SourceTopHeadline {
+	sources, err := apiClient.GetSources("en")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	headlines, err1 := e.ApiClient.GetTopHeadlines(srcs)
+	headlines, err1 := apiClient.GetTopHeadlines(sources)
 	if err1 != nil {
 		log.Fatal(err1)
 	}
@@ -24,13 +20,10 @@ func (e *NewsAPIETL) extract() []models.SourceTopHeadline {
 	return headlines
 }
 
-func (e *NewsAPIETL) transform(headlines []models.SourceTopHeadline) []models.SourceAggregatedTopHeadlines {
-	m := make(map[string][]models.SourceTopHeadline)
+func transform(headlines []models.SourceTopHeadline) []models.SourceAggregatedTopHeadlines {
+	m := make(map[string][]models.TopHeadline)
 	for _, h := range headlines {
-		th := models.SourceTopHeadline{
-			Title:    h.Title,
-			SourceId: h.SourceId,
-		}
+		th := models.TopHeadline{Title: h.Title}
 		m[h.SourceId] = append(m[h.SourceId], th)
 	}
 	aggTopHeadlines := make([]models.SourceAggregatedTopHeadlines, 0)
@@ -40,5 +33,15 @@ func (e *NewsAPIETL) transform(headlines []models.SourceTopHeadline) []models.So
 			SourceId:     k,
 			TopHeadlines: v,
 		}
+		aggTopHeadlines = append(aggTopHeadlines, aggTopHeadline)
 	}
+	return aggTopHeadlines
+}
+
+func RunETL(apiClient models.NewsAPIClient, loader models.DataLoader) error {
+	runTimestamp := time.Now().UTC().Format(time.RFC3339)
+	data := extract(apiClient)
+	dataTransformed := transform(data)
+	err := loader.LoadHeadlines(dataTransformed, runTimestamp)
+	return err
 }

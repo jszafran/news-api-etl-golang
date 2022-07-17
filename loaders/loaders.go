@@ -5,6 +5,7 @@ import (
 	"newsapietl/models"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type LocalDiskCSVLoader struct {
@@ -35,12 +36,17 @@ func saveHeadlinesToCSV(headlines []models.TopHeadline, csvPath string) error {
 func (l *LocalDiskCSVLoader) LoadHeadlines(
 	sourceTopHeadlines []models.SourceAggregatedTopHeadlines,
 	timestamp string) error {
-	if _, err := os.Stat(l.Path); !os.IsNotExist(err) {
+	if _, err := os.Stat(l.Path); os.IsNotExist(err) {
 		_ = os.Mkdir(l.Path, os.ModePerm)
 	}
+	timestamp = strings.Replace(timestamp[:19], ":", "", -1)
 
 	for _, h := range sourceTopHeadlines {
-		csvPath := filepath.Join(l.Path, h.SourceId, timestamp+"_headlines.csv")
+		sourceDir := filepath.Join(l.Path, h.SourceId)
+		if _, err := os.Stat(sourceDir); os.IsNotExist(err) {
+			_ = os.Mkdir(sourceDir, os.ModePerm)
+		}
+		csvPath := filepath.Join(sourceDir, timestamp+"_headlines.csv")
 		err1 := saveHeadlinesToCSV(h.TopHeadlines, csvPath)
 		if err1 != nil {
 			return err1

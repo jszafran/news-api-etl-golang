@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"newsapietl/apiclient"
-	"newsapietl/models"
+	"newsapietl/etl"
+	"newsapietl/loaders"
 	"os"
 )
 
@@ -19,24 +19,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	memClient := &apiclient.InMemoryNewsAPIClient{
-		Sources: []models.NewsSource{{Id: "some-id", Name: "Some Name"}, {Id: "other-id", Name: "Other Name"}},
-		TopHeadlines: []models.SourceTopHeadline{
-			{SourceId: "some-id", Title: "Title 1"},
-			{SourceId: "other-id", Title: "Title 2"},
-		},
+	loader := loaders.LocalDiskCSVLoader{Path: "results"}
+	err = etl.RunETL(httpClient, &loader)
+
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	printSources := func(c models.NewsAPIClient) {
-		sources, _ := c.GetSources("en")
-		for _, source := range sources {
-			fmt.Println(source.Id)
-		}
-	}
+	log.Println("ETL finished!")
 
-	clients := []models.NewsAPIClient{memClient, httpClient}
-
-	for _, c := range clients {
-		printSources(c)
-	}
 }
