@@ -21,7 +21,7 @@ func saveHeadlinesToCSV(headlines []models.TopHeadline, csvPath string) error {
 	writer := csv.NewWriter(p)
 	defer writer.Flush()
 
-	records := make([][]string, len(headlines))
+	records := make([][]string, 0)
 
 	for _, h := range headlines {
 		records = append(records, []string{h.Title})
